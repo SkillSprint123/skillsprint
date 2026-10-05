@@ -1,0 +1,159 @@
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
+import {
+  mkdtemp,
+  mkdir,
+  readFile,
+  writeFile,
+  rm,
+  symlink,
+} from 'node:fs/promises'
+import { resolve, relative } from 'node:path'
+import { spawnSync } from 'node:child_process'
+
+import schemas from '../../config/schemas.js'
+import { assemble, checkArtifact } from '../../scripts/release/assemble.mjs'
+import {
+  projectRoot,
+  requireAll,
+  within,
+} from '../../scripts/release/common.mjs'
+
+const defaults = JSON.parse(
+  await readFile(resolve(projectRoot, 'config/nano-sources.json'), 'utf8'),
+)
+
+test('конфигурация выпуска требует четыре записи, фиксированный ref и безопасные пути', () => {
+  const config = structuredClone(defaults)
+  assert.ok(schemas.nanoSourcesSchema.safeParse(config).success)
+  assert.throws(
+    () => requireAll(config),
+    /learning-plan.*trainer.*interview.*progress/,
+  )
+  delete config.nanos.trainer
+  assert.equal(schemas.nanoSourcesSchema.safeParse(config).success, false)
+  for (const ref of ['main', 'latest', '--upload-pack=bad']) {
+    const changed = structuredClone(defaults)
+    changed.nanos.trainer.source = {
+      kind: 'git',
+      url: 'git@bitbucket.org:team/trainer.git',
+      ref,
+    }
+    assert.equal(schemas.nanoSourcesSchema.safeParse(changed).success, false)
+  }
+  for (const output of ['../src', '/etc', 'dist/../../src']) {
+    const changed = structuredClone(defaults)
+    changed.nanos.trainer.output = output
+    assert.equal(schemas.nanoSourcesSchema.safeParse(changed).success, false)
+  }
+  assert.throws(() => within('/tmp/a', '../b'))
+})
+
+test('сборка сохраняет корень, копирует чанки и формирует рабочий реестр', async () => {
+  await mkdir(resolve(projectRoot, '.nano-work'), { recursive: true })
+  await mkdir(resolve(projectRoot, 'dist'), { recursive: true })
+  const source = await mkdtemp(
+    resolve(projectRoot, '.nano-work/assembly-test-'),
+  )
+  const output = await mkdtemp(resolve(projectRoot, 'dist/assembly-test-'))
+  try {
+    await writeFile(resolve(output, 'index.js'), 'root bundle')
+    await writeFile(
+      resolve(source, 'index.js'),
+      'export const contractVersion = 1',
+    )
+    await mkdir(resolve(source, 'assets'))
+    await writeFile(
+      resolve(source, 'assets/chunk.js'),
+      'export const answer = 42',
+    )
+    const config = structuredClone(defaults)
+    config.nanos.trainer.source = {
+      kind: 'local',
+      directory: relative(projectRoot, source),
+    }
+    config.nanos.trainer.output = '.'
+    const registry = await assemble(
+      schemas.nanoSourcesSchema.parse(config),
+      relative(projectRoot, output),
+    )
+    assert.equal(
+      await readFile(resolve(output, 'index.js'), 'utf8'),
+      'root bundle',
+    )
+    assert.equal(registry.nanos.trainer.entry, './nanos/trainer/0.1.0/index.js')
+    assert.equal(
+      await readFile(
+        resolve(output, 'nanos/trainer/0.1.0/assets/chunk.js'),
+        'utf8',
+      ),
+      'export const answer = 42',
+    )
+    assert.deepEqual(
+      JSON.parse(await readFile(resolve(output, 'nanos.json'), 'utf8')),
+      registry,
+    )
+    await writeFile(resolve(source, '.env.production'), 'secret=example')
+    await assert.rejects(
+      () => assemble(config, relative(projectRoot, output)),
+      /непубликуемый/,
+    )
+    await assert.rejects(
+      () => readFile(resolve(output, 'nanos.json')),
+      /ENOENT/,
+    )
+    await rm(resolve(source, '.env.production'))
+    await symlink(resolve(source, 'index.js'), resolve(source, 'linked.js'))
+    await assert.rejects(() => checkArtifact(source), /Ссылка/)
+  } finally {
+    await rm(source, { recursive: true, force: true })
+    await rm(output, { recursive: true, force: true })
+  }
+})
+
+test('режим полного выпуска завершает процесс с ошибкой при заглушках', () => {
+  const result = spawnSync(
+    process.execPath,
+    ['scripts/release/prepare.mjs', '--require-all'],
+    { cwd: projectRoot, encoding: 'utf8' },
+  )
+  assert.equal(result.status, 1)
+  assert.match(result.stderr, /Для полного выпуска нужны Git-источники/)
+})
+
+test('режим корня не требует checkout уже настроенных Git-источников', async () => {
+  await mkdir(resolve(projectRoot, '.nano-work'), { recursive: true })
+  await mkdir(resolve(projectRoot, 'dist'), { recursive: true })
+  const workspace = await mkdtemp(resolve(projectRoot, '.nano-work/root-test-'))
+  const output = await mkdtemp(resolve(projectRoot, 'dist/root-test-'))
+  try {
+    const config = structuredClone(defaults)
+    config.nanos.trainer.source = {
+      kind: 'git',
+      url: 'git@bitbucket.org:team/trainer.git',
+      ref: 'a'.repeat(40),
+    }
+    const configFile = resolve(workspace, 'sources.json')
+    await writeFile(configFile, JSON.stringify(config))
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/release/assemble.mjs',
+        '--root-only',
+        '--config',
+        configFile,
+        '--out',
+        relative(projectRoot, output),
+      ],
+      { cwd: projectRoot, encoding: 'utf8' },
+    )
+    assert.equal(result.status, 0, result.stderr)
+    assert.deepEqual(
+      JSON.parse(await readFile(resolve(output, 'nanos.json'), 'utf8')),
+      { schemaVersion: 1, nanos: {} },
+    )
+  } finally {
+    await rm(workspace, { recursive: true, force: true })
+    await rm(output, { recursive: true, force: true })
+  }
+})

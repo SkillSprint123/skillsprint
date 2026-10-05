@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": ".test-dist",
+    "rootDir": ".",
+    "types": ["node"]
+  },
+  "include": [
+    "tests/unit",
+    "src/app/config/schemas.ts",
+    "src/app/config/types.ts",
+    "src/app/config/parse.ts",
+    "src/app/router/paths.ts",
+    "src/app/router/schemas.ts",
+    "packages/contracts/src",
+    "packages/nano-runtime/src",
+    "config"
+  ],
+  "exclude": ["node_modules", "dist", ".test-dist"]
+}

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "nanos": {
+    "learning-plan": {
+      "version": "0.1.0",
+      "source": null,
+      "scripts": {
+        "check": "check",
+        "build": "build:prod"
+      },
+      "output": "dist",
+      "entry": "index.js",
+      "styles": []
+    },
+    "trainer": {
+      "version": "0.1.0",
+      "source": null,
+      "scripts": {
+        "check": "check",
+        "build": "build:prod"
+      },
+      "output": "dist",
+      "entry": "index.js",
+      "styles": []
+    },
+    "interview": {
+      "version": "0.1.0",
+      "source": null,
+      "scripts": {
+        "check": "check",
+        "build": "build:prod"
+      },
+      "output": "dist",
+      "entry": "index.js",
+      "styles": []
+    },
+    "progress": {
+      "version": "0.1.0",
+      "source": null,
+      "scripts": {
+        "check": "check",
+        "build": "build:prod"
+      },
+      "output": "dist",
+      "entry": "index.js",
+      "styles": []
+    }
+  }
+}

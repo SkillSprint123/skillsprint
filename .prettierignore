@@ -1,0 +1,13 @@
+node_modules/
+**/dist/
+build/
+coverage/
+.git/
+.idea/
+.brojs/
+.nano-work/
+.test-dist/
+.artifacts/
+.husky/_/
+package-lock.json
+design/
