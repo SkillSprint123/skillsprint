@@ -29,7 +29,7 @@
   "version": "0.1.0",
   "source": {
     "kind": "git",
-    "url": "git@bitbucket.org:skillsprint-team/skillsprint-trainer.git",
+    "url": "git@git.example.com:skillsprint-team/skillsprint-trainer.git",
     "ref": "refs/tags/v0.1.0"
   },
   "scripts": { "check": "check", "build": "build:prod" },
@@ -40,6 +40,8 @@
 ```
 
 Это пример записи, а не подтверждение существования репозитория или тега.
+`git.example.com` заменяется настоящим SSH-хостом, а путь — путём репозитория.
+Источники поддерживают GitHub, GitLab и другие Git-хостинги с SSH-доступом.
 Вместо тега можно указать полный commit SHA (40 символов). `main` и `latest`
 не принимаются. Релизные теги нельзя перемещать; для строгой фиксации используйте
 SHA. Версия в `package.json` нано должна совпадать с `version` конфигурации.
@@ -116,10 +118,10 @@ mount возвращает экземпляр с `unmount()`. Фреймворк
 Для общего выпуска заполните четыре источника, включите
 `FULL_RELEASE` и задайте:
 
-- `BITBUCKET_SSH_CREDENTIALS` — ID SSH-учётных данных Jenkins с правом чтения
+- `GIT_SSH_CREDENTIALS` — ID SSH-учётных данных Jenkins с правом чтения
   репозиториев нанос; доступ к корневому SCM настраивается в самой задаче.
-- `BITBUCKET_KNOWN_HOSTS` — ID Secret file с проверенными SSH host keys сервера
-  Bitbucket. Проверка host key не отключается.
+- `GIT_KNOWN_HOSTS` — ID Secret file с проверенными SSH host keys выбранного
+  Git-хостинга. Проверка host key не отключается.
 
 Pipeline устанавливает зависимости корня, проверяет его, затем получает,
 проверяет и собирает четыре нано, собирает корень и общий `dist`, архивирует

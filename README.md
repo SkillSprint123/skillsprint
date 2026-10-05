@@ -100,6 +100,10 @@ npm run check        # все проверки без сборки прилож�
 
 ## CI и публикация
 
+Пять репозиториев объединяются в GitHub Organization или GitLab Group.
+Jenkins и получение исходников используют SSH Git и не привязаны к одному
+хостингу. Параметры доступа к нано: `GIT_SSH_CREDENTIALS`, `GIT_KNOWN_HOSTS`.
+
 `Jenkinsfile`: `npm ci` → типы → lint → тесты → production-сборка → архивация
 `dist/**`. По умолчанию собирается корень с неподключёнными нанос.
 `FULL_RELEASE=true` получает все четыре Git-источника на фиксированных refs,
