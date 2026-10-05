@@ -11,11 +11,11 @@ import type {
   NanoRegistry,
 } from './types'
 
-// Проверяем вход, сохраняя исходные функции и их this. Результат Zod не подменяет модуль.
+// Validate input while preserving original functions and their this binding. Keep the original module.
 export function assertNanoModule(value: unknown): asserts value is NanoModule {
   if (!nanoModuleSchema.safeParse(value).success) {
     throw new Error(
-      'Несовместимый нанофронтенд: ожидаются contractVersion: 1 и mount',
+      'Incompatible nanofrontend: expected contractVersion: 1 and mount',
     )
   }
 }
@@ -24,7 +24,7 @@ export function assertNanoInstance(
   value: unknown,
 ): asserts value is NanoInstance {
   if (!nanoInstanceSchema.safeParse(value).success) {
-    throw new Error('Нанофронтенд должен вернуть экземпляр с unmount')
+    throw new Error('The nanofrontend must return an instance with unmount')
   }
 }
 
@@ -32,7 +32,7 @@ export function assertNanoContext(
   value: unknown,
 ): asserts value is NanoContext {
   if (!nanoContextSchema.safeParse(value).success) {
-    throw new Error('Некорректный контекст нанофронтенда')
+    throw new Error('Invalid nanofrontend context')
   }
 }
 
@@ -41,7 +41,5 @@ export function assertNanoRegistry(
 ): asserts value is NanoRegistry {
   const result = nanoRegistrySchema.safeParse(value)
   if (!result.success)
-    throw new Error(
-      `Некорректный реестр нанофронтендов: ${result.error.message}`,
-    )
+    throw new Error(`Invalid nanofrontend registry: ${result.error.message}`)
 }

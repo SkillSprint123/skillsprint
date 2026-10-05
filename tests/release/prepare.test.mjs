@@ -8,7 +8,7 @@ import { resolve } from 'node:path'
 import { prepareSources } from '../../scripts/release/prepare.mjs'
 import { readSources } from '../../scripts/release/common.mjs'
 
-test('получение исходников фиксирует commit, выполняет проверки перед сборкой и не записывает неудачный выпуск', async () => {
+test('source preparation pins commits, checks before building, and does not record failed releases', async () => {
   const base = await mkdtemp(resolve(tmpdir(), 'skillsprint-prepare-test-'))
   try {
     const config = await readSources()
@@ -50,12 +50,12 @@ test('получение исходников фиксирует commit, вып�
           config,
           (command, args, cwd) => {
             if (command === 'npm' && args[1] === 'check')
-              throw new Error('Проверки не прошли')
+              throw new Error('Checks failed')
             return execute(command, args, cwd)
           },
           base,
         ),
-      /Проверки не прошли/,
+      /Checks failed/,
     )
     await assert.rejects(
       () => readFile(resolve(base, '.nano-work/sources-lock.json')),

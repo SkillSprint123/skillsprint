@@ -9,7 +9,7 @@ const relativePathSchema = z
       !value.includes('\\') &&
       !value.split('/').includes('..') &&
       !value.includes('\0'),
-    'Нужен относительный путь без выхода из каталога',
+    'Use a relative path that stays inside the directory',
   )
 
 const gitSourceSchema = z
@@ -19,13 +19,13 @@ const gitSourceSchema = z
       .string()
       .regex(
         /^git@[a-zA-Z0-9.-]+:[a-zA-Z0-9_./-]+\.git$/,
-        'Нужен SSH-адрес Git-репозитория',
+        'An SSH Git repository URL is required',
       ),
     ref: z
       .string()
       .regex(
         /^(?:[a-f0-9]{40}|refs\/tags\/[a-zA-Z0-9][a-zA-Z0-9._/-]*)$/,
-        'Укажите commit SHA или refs/tags/<тег>',
+        'Specify a commit SHA or refs/tags/<tag>',
       ),
   })
   .strict()
@@ -70,7 +70,7 @@ const nanoSourcesSchema = z
         ctx.addIssue({
           code: 'custom',
           path: ['nanos', id],
-          message: 'Добавьте запись модуля',
+          message: 'Add a module entry',
         })
     }
     for (const id of Object.keys(value.nanos)) {
@@ -78,7 +78,7 @@ const nanoSourcesSchema = z
         ctx.addIssue({
           code: 'custom',
           path: ['nanos', id],
-          message: 'Неизвестный модуль',
+          message: 'Unknown module',
         })
     }
   })

@@ -7,7 +7,7 @@ import webpack from 'webpack'
 
 import NanoRegistryPlugin from '../../scripts/webpack-plugin.cjs'
 
-test('ошибка компиляции даёт ненулевой код для CI, даже если BroJS печатает успешное завершение', async () => {
+test('compilation errors return a nonzero exit code even if BroJS reports success', async () => {
   const directory = await mkdtemp(
     resolve(tmpdir(), 'skillsprint-webpack-test-'),
   )

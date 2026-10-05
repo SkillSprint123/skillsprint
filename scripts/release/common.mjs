@@ -11,7 +11,7 @@ export const option = (name, fallback = '') => {
   if (index < 0) return fallback
   const value = process.argv[index + 1]
   if (!value || value.startsWith('--'))
-    throw new Error(`Нужно значение ${name}`)
+    throw new Error(`A value is required for ${name}`)
   return value
 }
 
@@ -35,9 +35,7 @@ export const run = (command, args, cwd) => {
   if (result.stdout) process.stdout.write(result.stdout)
   if (result.error) throw result.error
   if (result.status !== 0)
-    throw new Error(
-      `${command} завершился с ошибкой (${result.status ?? result.signal})`,
-    )
+    throw new Error(`${command} failed (${result.status ?? result.signal})`)
   return result.stdout?.trim() || ''
 }
 
@@ -46,7 +44,7 @@ export const within = (parent, child) => {
   const filename = resolve(parent, child)
   const rel = relative(parent, filename)
   if (rel === '..' || rel.startsWith('../') || isAbsolute(rel))
-    throw new Error('Путь выходит за разрешённый каталог')
+    throw new Error('Path escapes the allowed directory')
   return filename
 }
 
@@ -57,13 +55,13 @@ export const requireAll = (config) => {
   )
   if (missing.length)
     throw new Error(
-      `Для полного выпуска нужны Git-источники: ${missing.join(', ')}`,
+      `A full release requires Git sources: ${missing.join(', ')}`,
     )
 }
 
 /** @param {string} id @param {import('../../config/types').NanoSource} nano */
 export const sourceDirectory = (id, nano, base = projectRoot) => {
-  if (!nano.source) throw new Error(`Источник ${id} не настроен`)
+  if (!nano.source) throw new Error(`Source for ${id} is not configured`)
   return nano.source.kind === 'local'
     ? within(base, nano.source.directory)
     : within(base, `.nano-work/checkouts/${id}`)

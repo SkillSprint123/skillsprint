@@ -41,14 +41,16 @@ export const prepareSources = async (
     execute('git', ['checkout', '--detach', 'FETCH_HEAD'], directory)
     const commit = execute('git', ['rev-parse', 'HEAD'], directory)
     if (!/^[a-f0-9]{40}$/.test(commit))
-      throw new Error(`Не удалось определить commit ${id}`)
+      throw new Error(`Could not determine the commit for ${id}`)
     if (/^[a-f0-9]{40}$/.test(nano.source.ref) && commit !== nano.source.ref)
-      throw new Error(`Неверный commit ${id}`)
+      throw new Error(`Unexpected commit for ${id}`)
     const pkg = JSON.parse(
       await readFile(resolve(directory, 'package.json'), 'utf8'),
     )
     if (pkg.version !== nano.version)
-      throw new Error(`Версия ${id} отличается от состава выпуска`)
+      throw new Error(
+        `Version of ${id} does not match the release configuration`,
+      )
     execute('npm', ['ci'], directory)
     execute('npm', ['run', nano.scripts.check], directory)
     execute('npm', ['run', nano.scripts.build], directory)

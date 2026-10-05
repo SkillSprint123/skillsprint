@@ -9,7 +9,7 @@ import type { NanoInstance } from '../../contracts/src'
 import { loadRegistry, loadStyle, resolveResourceUrl } from './resources'
 import type { NanoSession, NanoSessionOptions } from './types'
 
-// Webpack сохраняет нативный import: нано не включается в bundle корня.
+// Webpack preserves native import: nanos are not bundled into the root.
 const importModule = (url: string): Promise<unknown> =>
   import(/* webpackIgnore: true */ url)
 
@@ -37,7 +37,7 @@ export const createNanoSession = (options: NanoSessionOptions): NanoSession => {
   const dispose = () => {
     active = false
     controller.abort()
-    // Отдельный host исключает запись старого mount в контейнер нового нано.
+    // A separate host prevents an outdated mount from modifying a new nano container.
     host.remove()
     if (instance) {
       const current = instance
@@ -91,7 +91,7 @@ export const createNanoSession = (options: NanoSessionOptions): NanoSession => {
       if (!active) return
       assertNanoModule(module)
       if (module.contractVersion !== entry.contractVersion)
-        throw new Error('Версии контракта не совпадают')
+        throw new Error('Contract versions do not match')
       const mounted = await module.mount(host, options.context)
       assertNanoInstance(mounted)
       if (!active) {

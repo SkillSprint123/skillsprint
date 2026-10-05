@@ -10,7 +10,7 @@ import {
 } from '../../packages/contracts/src'
 import type { NanoModule } from '../../packages/contracts/src/types'
 
-test('контракт принимает синхронное и асинхронное подключение', async () => {
+test('the contract accepts synchronous and asynchronous mounts', async () => {
   let cleanups = 0
   const instance = {
     unmount: () => {
@@ -32,7 +32,7 @@ test('контракт принимает синхронное и асинхро
   assert.equal(cleanups, 2)
 })
 
-test('несовместимая версия отклоняется без вызова mount', () => {
+test('incompatible versions are rejected without calling mount', () => {
   let called = false
   assert.throws(
     () =>
@@ -42,12 +42,12 @@ test('несовместимая версия отклоняется без вы
           called = true
         },
       }),
-    /Несовместимый/,
+    /Incompatible/,
   )
   assert.equal(called, false)
 })
 
-test('загрузчик должен отвергать некорректные экспорты и отсутствие очистки', () => {
+test('the loader rejects invalid exports and missing cleanup', () => {
   for (const value of [
     null,
     undefined,
@@ -63,7 +63,7 @@ test('загрузчик должен отвергать некорректны�
   assertNanoInstance({ unmount: async () => {} })
 })
 
-test('assert-проверки сохраняют функции и их контекст this', () => {
+test('assertions preserve functions and their this binding', () => {
   const instance = {
     count: 0,
     unmount() {
@@ -81,7 +81,7 @@ test('assert-проверки сохраняют функции и их конт
   assert.equal(module.mount, originalMount)
 })
 
-test('контекст проверяет пользователя и navigate; DOM-схема безопасна без браузера', () => {
+test('context validates users and navigate; the DOM schema works without a browser', () => {
   const context = {
     basePath: '/skillsprint/trainer',
     apiBaseUrl: '/api',
@@ -89,13 +89,13 @@ test('контекст проверяет пользователя и navigate; 
     navigate: () => {},
   }
   assertNanoContext(context)
-  assertNanoContext({ ...context, user: { id: '1', displayName: 'Студент' } })
+  assertNanoContext({ ...context, user: { id: '1', displayName: 'Student' } })
   assert.throws(() => assertNanoContext({ ...context, navigate: true }))
   assert.throws(() => assertNanoContext({ ...context, user: { id: 1 } }))
   assert.equal(nanoElementSchema.safeParse({}).success, false)
 })
 
-test('реестр принимает v1 и отвергает несовместимые версии и неполные записи', () => {
+test('the registry accepts v1 and rejects incompatible versions and incomplete entries', () => {
   const entry = {
     version: '1.2.0',
     contractVersion: 1,

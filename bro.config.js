@@ -19,7 +19,7 @@ module.exports = {
   },
   config: {
     'skillsprint.api': '/api',
-    // Пустое значение: nanos.json рядом с текущим bundle, с учётом publicPath.
+    // Empty value: nanos.json next to the current bundle, resolved using publicPath.
     'skillsprint.nanos': process.env.NANO_REGISTRY_URL || '',
   },
   htmlTemplatePath: undefined,

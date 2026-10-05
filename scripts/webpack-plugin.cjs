@@ -1,7 +1,7 @@
 const { readFileSync } = require('node:fs')
 const { resolve } = require('node:path')
 
-// Применяется и при прямом brojs build, и в dev/SPA-сборке.
+// Applies to direct BroJS builds and development/SPA builds.
 class NanoRegistryPlugin {
   /** @param {import('webpack').Compiler} compiler */
   apply(compiler) {
@@ -27,7 +27,7 @@ class NanoRegistryPlugin {
         },
       )
     })
-    // BroJS CLI не проверяет stats.hasErrors(): CI должен получить ненулевой exit code.
+    // BroJS CLI does not check stats.hasErrors(): CI must receive a nonzero exit code.
     compiler.hooks.done.tap('NanoRegistryPlugin', (stats) => {
       if (stats.hasErrors()) process.exitCode = 1
     })

@@ -26,20 +26,22 @@ import {
 /** @param {string} directory */
 export const checkArtifact = async (directory) => {
   if ((await lstat(directory)).isSymbolicLink())
-    throw new Error('Ссылки в артефакте запрещены')
+    throw new Error('Symbolic links are not allowed in the artifact')
   for (const item of await readdir(directory, { withFileTypes: true })) {
     if (item.isSymbolicLink())
-      throw new Error(`Ссылка в артефакте: ${item.name}`)
+      throw new Error(`Symbolic link in the artifact: ${item.name}`)
     if (
       /^(\.env(?:\..*)?|\.git|\.npmrc|node_modules|id_rsa|id_ed25519)$/.test(
         item.name,
       ) ||
       /\.(?:key|p12|pfx)$/.test(item.name)
     ) {
-      throw new Error(`В артефакте найден непубликуемый файл: ${item.name}`)
+      throw new Error(
+        `Non-publishable file found in the artifact: ${item.name}`,
+      )
     }
     if (item.isDirectory()) await checkArtifact(resolve(directory, item.name))
-    else if (!item.isFile()) throw new Error(`Недопустимый файл: ${item.name}`)
+    else if (!item.isFile()) throw new Error(`Unsupported file: ${item.name}`)
   }
 }
 
@@ -47,7 +49,7 @@ export const checkArtifact = async (directory) => {
 export const checkFile = async (directory, file) => {
   const filename = within(directory, file)
   if (!(await lstat(filename)).isFile())
-    throw new Error(`Не найден файл ${file}`)
+    throw new Error(`File not found: ${file}`)
   within(
     await realpath(directory),
     relative(await realpath(directory), await realpath(filename)),
@@ -58,7 +60,7 @@ export const checkFile = async (directory, file) => {
  * @param {string} output */
 export const assemble = async (config, output) => {
   const target = within(projectRoot, output)
-  // Итоговый каталог — только dist или его вложенный каталог.
+  // Output must be dist or a directory inside dist.
   within(
     resolve(projectRoot, 'dist'),
     relative(resolve(projectRoot, 'dist'), target),
@@ -82,7 +84,7 @@ export const assemble = async (config, output) => {
   }
   for (const [id, nano] of Object.entries(config.nanos)) {
     if (!nano.source) {
-      console.log(`${id}: источник пока не подключён`)
+      console.log(`${id}: source is not configured; skipping`)
       continue
     }
     const checkout = sourceDirectory(id, nano)
@@ -96,7 +98,7 @@ export const assemble = async (config, output) => {
         run('git', ['rev-parse', 'HEAD'], checkout) !== pinned.commit
       ) {
         throw new Error(
-          `Сборка ${id} устарела: сначала выполните nanos:prepare`,
+          `Build for ${id} is stale: run npm run nanos:prepare first`,
         )
       }
     }
@@ -107,7 +109,7 @@ export const assemble = async (config, output) => {
       relative(await realpath(checkout), realDirectory),
     )
     if (!['.js', '.mjs'].includes(extname(nano.entry)))
-      throw new Error(`Точка входа ${id} должна быть JS-модулем`)
+      throw new Error(`Entry point for ${id} must be a JavaScript module`)
     await checkArtifact(directory)
     await checkFile(directory, nano.entry)
     for (const style of nano.styles) await checkFile(directory, style)
@@ -125,7 +127,7 @@ export const assemble = async (config, output) => {
     resolve(target, 'nanos.json'),
     `${JSON.stringify(registry, null, 2)}\n`,
   )
-  // Только provenance выбранного выпуска; SSH-адреса и refs не нужны браузеру.
+  // Include release provenance only; the browser does not need SSH URLs or refs.
   const pkg = JSON.parse(
     await readFile(resolve(projectRoot, 'package.json'), 'utf8'),
   )

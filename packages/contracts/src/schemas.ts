@@ -12,7 +12,7 @@ export const nanoContextSchema = z.object({
   navigate: z.function().args(z.string()).returns(z.void()),
 })
 
-// Нативный DOM-тип; проверка откладывается до вызова схемы и учитывает realm.
+// Native DOM type; validation is deferred until schema evaluation and supports multiple realms.
 export const nanoElementSchema = z.custom<HTMLElement>(
   (value: unknown) => {
     if (
@@ -25,7 +25,7 @@ export const nanoElementSchema = z.custom<HTMLElement>(
     const constructor = element.ownerDocument?.defaultView?.HTMLElement
     return Boolean(constructor && element instanceof constructor)
   },
-  { message: 'Ожидается DOM-контейнер HTMLElement' },
+  { message: 'Expected an HTMLElement container' },
 )
 
 export const nanoInstanceSchema = z.object({
@@ -48,7 +48,7 @@ export const nanoRegistryEntrySchema = z.object({
     .string()
     .regex(
       /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/,
-      'Нужна фиксированная версия, например 1.2.0',
+      'A fixed version is required, such as 1.2.0',
     ),
   contractVersion: z.literal(1),
   entry: z.string().min(1),

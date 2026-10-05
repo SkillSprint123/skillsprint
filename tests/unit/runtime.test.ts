@@ -11,7 +11,7 @@ import type {
 } from '../../packages/nano-runtime/src'
 import type { NanoRegistry } from '../../packages/contracts/src'
 
-// Минимальный DOM-double проверяет владение контейнерами и очистку ресурсов.
+// A minimal DOM double checks container ownership and resource cleanup.
 class ElementDouble {
   dataset: Record<string, string> = {}
   children: ElementDouble[] = []
@@ -68,7 +68,7 @@ const fixture = (overrides: Partial<NanoSessionOptions> = {}) => {
   return { container, states, session: createNanoSession(options) }
 }
 
-test('нано подключается по адресу реестра и отключается ровно один раз', async () => {
+test('a nano mounts from the registry URL and unmounts exactly once', async () => {
   let unmounts = 0
   let url = ''
   const { session, states, container } = fixture({
@@ -100,7 +100,7 @@ test('нано подключается по адресу реестра и от
   assert.equal(unmounts, 1)
 })
 
-test('уход во время импорта исключает вызов mount', async () => {
+test('leaving during import prevents mount from being called', async () => {
   let finish: (value: unknown) => void = () => {}
   let entered: () => void = () => {}
   const importing = new Promise<void>((resolve) => {
@@ -132,7 +132,7 @@ test('уход во время импорта исключает вызов moun
   )
 })
 
-test('поздний асинхронный mount очищается, не затрагивая новый контейнер', async () => {
+test('a late asynchronous mount is cleaned up without affecting the new container', async () => {
   let finish: (value: unknown) => void = () => {}
   let entered: () => void = () => {}
   const mounting = new Promise<void>((resolve) => {
@@ -169,7 +169,7 @@ test('поздний асинхронный mount очищается, не за�
   )
 })
 
-test('ошибка unmount сообщается, контейнер удаляется и повторной очистки нет', async () => {
+test('unmount errors are reported, the container is removed, and cleanup is not repeated', async () => {
   const errors: unknown[] = []
   const { session, container } = fixture({
     importModule: async () => ({
@@ -189,7 +189,7 @@ test('ошибка unmount сообщается, контейнер удаляе
   assert.equal(container.children.length, 0)
 })
 
-test('неподключённый модуль, неверный контракт и сетевые ошибки имеют разные состояния', async () => {
+test('missing modules, invalid contracts, and network failures have distinct states', async () => {
   const missing = fixture({ id: 'progress' })
   await missing.session.start()
   assert.equal(missing.states.at(-1)?.status, 'unavailable')
@@ -209,7 +209,7 @@ test('неподключённый модуль, неверный контрак
   }
 })
 
-test('подробности ошибки доступны разработчику и не попадают в сообщение пользователю', async () => {
+test('error details are available to developers and omitted from the user message', async () => {
   const error = new Error(
     'https://example.test/private/module.js returned HTTP 503',
   )
@@ -228,7 +228,7 @@ test('подробности ошибки доступны разработчи�
   )
 })
 
-test('таймаут снимает контейнер, а запоздавший mount всё равно отключается', async () => {
+test('timeouts detach the container and late mounts are still cleaned up', async () => {
   let finish: (value: unknown) => void = () => {}
   let timedOut: () => void = () => {}
   const timeout = new Promise<void>((resolve) => {
@@ -260,7 +260,7 @@ test('таймаут снимает контейнер, а запоздавши�
   assert.equal(unmounts, 1)
 })
 
-test('ресурсы разрешаются относительно реестра, исполняемые не-HTTP адреса отвергаются', () => {
+test('resources resolve relative to the registry and non-HTTP protocols are rejected', () => {
   assert.equal(
     resolveResourceUrl('./chunk.js', 'https://example.test/a/nanos.json'),
     'https://example.test/a/chunk.js',

@@ -6,7 +6,7 @@ import { parseAppConfig } from '../../src/app/config/parse'
 import { joinRoute } from '../../src/app/router/paths'
 import { appSectionsSchema } from '../../src/app/router/schemas'
 
-test('AI выключен при false, отсутствии или некорректном значении флага', () => {
+test('AI is disabled for false, missing, or invalid feature flags', () => {
   for (const value of ['false', false, undefined, null, '', 'yes', 1]) {
     assert.equal(featureFlagSchema.parse(value), false)
   }
@@ -14,7 +14,7 @@ test('AI выключен при false, отсутствии или некорр
   assert.equal(featureFlagSchema.parse(true), true)
 })
 
-test('маршруты корректны при другом префиксе стенда и корневом пути', () => {
+test('routes support different deployment prefixes and the root path', () => {
   assert.equal(basePathSchema.parse(undefined), '/skillsprint')
   assert.equal(
     joinRoute(basePathSchema.parse('/stand/skillsprint/'), 'plan'),
@@ -23,7 +23,7 @@ test('маршруты корректны при другом префиксе �
   assert.equal(joinRoute(basePathSchema.parse('/'), 'trainer'), '/trainer')
 })
 
-test('Zod проверяет конфигурацию и применяет безопасные значения по умолчанию', () => {
+test('Zod validates configuration and applies safe defaults', () => {
   const config = parseAppConfig({ version: '0.1.0', features: {} })
   assert.equal(config.features.aiInterview, false)
   assert.equal(config.apiBaseUrl, '/api')
@@ -34,8 +34,8 @@ test('Zod проверяет конфигурацию и применяет бе
   )
 })
 
-test('схема разделов отвергает неизвестные и повторяющиеся маршруты', () => {
-  const section = { path: 'plan', title: 'План', description: 'Задачи на день' }
+test('the section schema rejects unknown and duplicate routes', () => {
+  const section = { path: 'plan', title: 'Plan', description: 'Daily tasks' }
   assert.equal(appSectionsSchema.safeParse([section]).success, true)
   assert.equal(appSectionsSchema.safeParse([section, section]).success, false)
   assert.equal(

@@ -23,7 +23,7 @@ const defaults = JSON.parse(
   await readFile(resolve(projectRoot, 'config/nano-sources.json'), 'utf8'),
 )
 
-test('конфигурация выпуска требует четыре записи, фиксированный ref и безопасные пути', () => {
+test('release configuration requires four entries, a pinned ref, and safe paths', () => {
   const config = structuredClone(defaults)
   assert.ok(schemas.nanoSourcesSchema.safeParse(config).success)
   assert.throws(
@@ -49,7 +49,7 @@ test('конфигурация выпуска требует четыре зап
   assert.throws(() => within('/tmp/a', '../b'))
 })
 
-test('сборка сохраняет корень, копирует чанки и формирует рабочий реестр', async () => {
+test('assembly preserves the root, copies chunks, and produces a valid registry', async () => {
   await mkdir(resolve(projectRoot, '.nano-work'), { recursive: true })
   await mkdir(resolve(projectRoot, 'dist'), { recursive: true })
   const source = await mkdtemp(
@@ -96,7 +96,7 @@ test('сборка сохраняет корень, копирует чанки 
     await writeFile(resolve(source, '.env.production'), 'secret=example')
     await assert.rejects(
       () => assemble(config, relative(projectRoot, output)),
-      /непубликуемый/,
+      /Non-publishable/,
     )
     await assert.rejects(
       () => readFile(resolve(output, 'nanos.json')),
@@ -104,24 +104,24 @@ test('сборка сохраняет корень, копирует чанки 
     )
     await rm(resolve(source, '.env.production'))
     await symlink(resolve(source, 'index.js'), resolve(source, 'linked.js'))
-    await assert.rejects(() => checkArtifact(source), /Ссылка/)
+    await assert.rejects(() => checkArtifact(source), /Symbolic link/)
   } finally {
     await rm(source, { recursive: true, force: true })
     await rm(output, { recursive: true, force: true })
   }
 })
 
-test('режим полного выпуска завершает процесс с ошибкой при заглушках', () => {
+test('full release mode fails when sources are not configured', () => {
   const result = spawnSync(
     process.execPath,
     ['scripts/release/prepare.mjs', '--require-all'],
     { cwd: projectRoot, encoding: 'utf8' },
   )
   assert.equal(result.status, 1)
-  assert.match(result.stderr, /Для полного выпуска нужны Git-источники/)
+  assert.match(result.stderr, /A full release requires Git sources/)
 })
 
-test('режим корня не требует checkout уже настроенных Git-источников', async () => {
+test('root-only mode does not require checkouts of configured Git sources', async () => {
   await mkdir(resolve(projectRoot, '.nano-work'), { recursive: true })
   await mkdir(resolve(projectRoot, 'dist'), { recursive: true })
   const workspace = await mkdtemp(resolve(projectRoot, '.nano-work/root-test-'))

@@ -15,9 +15,9 @@ pipeline {
     }
 
     parameters {
-        booleanParam(name: 'FULL_RELEASE', defaultValue: false, description: 'Собрать все четыре нано из настроенных Git-источников')
-        string(name: 'GIT_SSH_CREDENTIALS', defaultValue: '', description: 'Jenkins Credentials ID: SSH-ключ с доступом ко всем репозиториям')
-        string(name: 'GIT_KNOWN_HOSTS', defaultValue: '', description: 'Jenkins Credentials ID: Secret file с проверенными SSH host keys Git-хостинга')
+        booleanParam(name: 'FULL_RELEASE', defaultValue: false, description: 'Build all four nanos from configured Git sources')
+        string(name: 'GIT_SSH_CREDENTIALS', defaultValue: '', description: 'Jenkins Credentials ID: SSH key with access to all repositories')
+        string(name: 'GIT_KNOWN_HOSTS', defaultValue: '', description: 'Jenkins Credentials ID: secret file with verified SSH host keys for the Git host')
     }
 
     stages {
@@ -35,7 +35,7 @@ pipeline {
             when { expression { !params.FULL_RELEASE } }
             steps {
                 sh 'npm run build:prod -- --root-only'
-                script { currentBuild.description = 'Корень; четыре нано пока не включены' }
+                script { currentBuild.description = 'Root only; the four nanos are not included' }
             }
         }
         stage('release') {
@@ -43,7 +43,7 @@ pipeline {
             steps {
                 script {
                     if (!params.GIT_SSH_CREDENTIALS?.trim() || !params.GIT_KNOWN_HOSTS?.trim()) {
-                        error('Укажите Credentials ID для SSH и проверенного known_hosts')
+                        error('Specify Credentials IDs for SSH and verified known_hosts')
                     }
                 }
                 sshagent(credentials: [params.GIT_SSH_CREDENTIALS]) {
@@ -53,7 +53,7 @@ pipeline {
                         }
                     }
                 }
-                script { currentBuild.description = 'Общий артефакт: корень + четыре нано' }
+                script { currentBuild.description = 'Combined artifact: root and four nanos' }
             }
         }
         stage('archive') {
@@ -61,6 +61,6 @@ pipeline {
                 archiveArtifacts artifacts: 'dist/**', fingerprint: true, allowEmptyArchive: false
             }
         }
-        // Добавить публикацию после согласования команды деплоя стенда.
+        // Add publishing once the deployment command has been agreed.
     }
 }
