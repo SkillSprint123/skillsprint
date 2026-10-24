@@ -18,13 +18,10 @@ import {
   requireAll,
   within,
 } from '../../scripts/release/common.mjs'
-
-const defaults = JSON.parse(
-  await readFile(resolve(projectRoot, 'config/nano-sources.json'), 'utf8'),
-)
+import { createSources } from './fixtures.mjs'
 
 test('release configuration requires four entries, a pinned ref, and safe paths', () => {
-  const config = structuredClone(defaults)
+  const config = createSources()
   assert.ok(schemas.nanoSourcesSchema.safeParse(config).success)
   assert.throws(
     () => requireAll(config),
@@ -33,7 +30,7 @@ test('release configuration requires four entries, a pinned ref, and safe paths'
   delete config.nanos.trainer
   assert.equal(schemas.nanoSourcesSchema.safeParse(config).success, false)
   for (const ref of ['main', 'latest', '--upload-pack=bad']) {
-    const changed = structuredClone(defaults)
+    const changed = createSources()
     changed.nanos.trainer.source = {
       kind: 'git',
       url: 'git@bitbucket.org:team/trainer.git',
@@ -42,11 +39,32 @@ test('release configuration requires four entries, a pinned ref, and safe paths'
     assert.equal(schemas.nanoSourcesSchema.safeParse(changed).success, false)
   }
   for (const output of ['../src', '/etc', 'dist/../../src']) {
-    const changed = structuredClone(defaults)
+    const changed = createSources()
     changed.nanos.trainer.output = output
     assert.equal(schemas.nanoSourcesSchema.safeParse(changed).success, false)
   }
   assert.throws(() => within('/tmp/a', '../b'))
+})
+
+test('full releases report only missing Git sources and accept fully configured sources', () => {
+  const config = createSources()
+  config.nanos.interview.source = {
+    kind: 'git',
+    url: 'git@bitbucket.org:team/interview.git',
+    ref: 'refs/tags/v0.1.0',
+  }
+  assert.throws(() => requireAll(config), {
+    message:
+      'A full release requires Git sources: learning-plan, trainer, progress',
+  })
+  for (const id of ['learning-plan', 'trainer', 'progress']) {
+    config.nanos[id].source = {
+      kind: 'git',
+      url: `git@bitbucket.org:team/${id}.git`,
+      ref: 'a'.repeat(40),
+    }
+  }
+  assert.doesNotThrow(() => requireAll(schemas.nanoSourcesSchema.parse(config)))
 })
 
 test('assembly preserves the root, copies chunks, and produces a valid registry', async () => {
@@ -67,7 +85,7 @@ test('assembly preserves the root, copies chunks, and produces a valid registry'
       resolve(source, 'assets/chunk.js'),
       'export const answer = 42',
     )
-    const config = structuredClone(defaults)
+    const config = createSources()
     config.nanos.trainer.source = {
       kind: 'local',
       directory: relative(projectRoot, source),
@@ -111,14 +129,22 @@ test('assembly preserves the root, copies chunks, and produces a valid registry'
   }
 })
 
-test('full release mode fails when sources are not configured', () => {
-  const result = spawnSync(
-    process.execPath,
-    ['scripts/release/prepare.mjs', '--require-all'],
-    { cwd: projectRoot, encoding: 'utf8' },
-  )
-  assert.equal(result.status, 1)
-  assert.match(result.stderr, /A full release requires Git sources/)
+test('full release mode fails when sources are not configured', async () => {
+  await mkdir(resolve(projectRoot, '.nano-work'), { recursive: true })
+  const workspace = await mkdtemp(resolve(projectRoot, '.nano-work/full-test-'))
+  try {
+    const configFile = resolve(workspace, 'sources.json')
+    await writeFile(configFile, JSON.stringify(createSources()))
+    const result = spawnSync(
+      process.execPath,
+      ['scripts/release/prepare.mjs', '--require-all', '--config', configFile],
+      { cwd: projectRoot, encoding: 'utf8' },
+    )
+    assert.equal(result.status, 1)
+    assert.match(result.stderr, /A full release requires Git sources/)
+  } finally {
+    await rm(workspace, { recursive: true, force: true })
+  }
 })
 
 test('root-only mode does not require checkouts of configured Git sources', async () => {
@@ -127,7 +153,7 @@ test('root-only mode does not require checkouts of configured Git sources', asyn
   const workspace = await mkdtemp(resolve(projectRoot, '.nano-work/root-test-'))
   const output = await mkdtemp(resolve(projectRoot, 'dist/root-test-'))
   try {
-    const config = structuredClone(defaults)
+    const config = createSources()
     config.nanos.trainer.source = {
       kind: 'git',
       url: 'git@bitbucket.org:team/trainer.git',

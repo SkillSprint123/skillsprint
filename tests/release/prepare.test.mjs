@@ -6,12 +6,12 @@ import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 
 import { prepareSources } from '../../scripts/release/prepare.mjs'
-import { readSources } from '../../scripts/release/common.mjs'
+import { createSources } from './fixtures.mjs'
 
 test('source preparation pins commits, checks before building, and does not record failed releases', async () => {
   const base = await mkdtemp(resolve(tmpdir(), 'skillsprint-prepare-test-'))
   try {
-    const config = await readSources()
+    const config = createSources()
     const commit = 'a'.repeat(40)
     config.nanos.trainer.source = {
       kind: 'git',
@@ -32,6 +32,7 @@ test('source preparation pins commits, checks before building, and does not reco
       return args[0] === 'rev-parse' ? commit : ''
     }
     const lock = await prepareSources(config, execute, base)
+    assert.deepEqual(Object.keys(lock), ['trainer'])
     assert.equal(lock.trainer.commit, commit)
     assert.deepEqual(calls.slice(-3), [
       ['npm', 'ci'],

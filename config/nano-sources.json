@@ -25,7 +25,11 @@
     },
     "interview": {
       "version": "0.1.0",
-      "source": null,
+      "source": {
+        "kind": "git",
+        "url": "git@github.com:SkillSprint123/skillsprint-Interview.git",
+        "ref": "refs/tags/v0.1.0"
+      },
       "scripts": {
         "check": "check",
         "build": "build:prod"

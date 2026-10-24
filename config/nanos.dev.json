@@ -1,4 +1,11 @@
 {
   "schemaVersion": 1,
-  "nanos": {}
+  "nanos": {
+    "interview": {
+      "version": "0.1.0",
+      "contractVersion": 1,
+      "entry": "http://localhost:5173/src/index.ts",
+      "styles": []
+    }
+  }
 }
