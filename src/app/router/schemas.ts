@@ -3,6 +3,8 @@ import { z } from 'zod'
 export const appSectionSchema = z.object({
   path: z.enum(['plan', 'trainer', 'interview', 'progress', 'pro']),
   title: z.string().min(1),
+  navigationTitle: z.string().min(1).optional(),
+  caption: z.string().min(1).optional(),
   description: z.string().min(1),
   nanoId: z
     .enum(['learning-plan', 'trainer', 'interview', 'progress'])

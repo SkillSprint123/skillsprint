@@ -11,8 +11,10 @@ export const OverviewPage = () => {
   const styles = createOverviewStyles(useCss())
   return (
     <section>
-      <h1>Подготовка к собеседованию</h1>
-      <p>Поставьте цель, составьте план и практикуйтесь в удобном темпе.</p>
+      <h1>Хороший день для роста</h1>
+      <p className={styles.subtitle}>
+        Ещё один шаг к собеседованию, на котором ты уверен в себе.
+      </p>
       <div className={styles.cards}>
         {sections.map(({ path, title, description }) => (
           <article key={path} className={styles.panel}>
