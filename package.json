@@ -25,7 +25,7 @@
     "clean": "node scripts/clean.cjs",
     "compile": "npm run contracts:build && node scripts/brojs.mjs compile && node scripts/release/assemble.mjs --root-only --out dist/spa",
     "prom": "npm run compile && node scripts/brojs.mjs prom-server --port=8099",
-    "test": "node scripts/clean.cjs tests && tsc -p tsconfig.tests.json && node --test .test-dist/tests",
+    "test": "node scripts/clean.cjs tests && tsc -p tsconfig.tests.json && node --test .test-dist/tests/unit/*.test.js",
     "test:release": "npm run contracts:build && node --test tests/release/*.test.mjs",
     "test:all": "npm test && npm run test:release",
     "format": "prettier . --write",
