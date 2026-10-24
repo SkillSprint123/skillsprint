@@ -132,6 +132,33 @@ test('leaving during import prevents mount from being called', async () => {
   )
 })
 
+test('leaving during an unfinished import clears the loading timer immediately', async (t) => {
+  const clearTimer = t.mock.method(globalThis, 'clearTimeout')
+  let finish: (value: unknown) => void = () => {}
+  let entered: () => void = () => {}
+  const importing = new Promise<void>((resolve) => {
+    entered = resolve
+  })
+  const { session } = fixture({
+    importModule: () => {
+      entered()
+      return new Promise((resolve) => {
+        finish = resolve
+      })
+    },
+  })
+  const start = session.start()
+  await importing
+  try {
+    await session.dispose()
+    assert.equal(clearTimer.mock.callCount(), 1)
+    assert.ok(clearTimer.mock.calls[0].arguments[0])
+  } finally {
+    finish({})
+    await start
+  }
+})
+
 test('a late asynchronous mount is cleaned up without affecting the new container', async () => {
   let finish: (value: unknown) => void = () => {}
   let entered: () => void = () => {}

@@ -68,19 +68,21 @@ export const assemble = async (config, output) => {
   await mkdir(target, { recursive: true })
   await rm(resolve(target, 'nanos'), { recursive: true, force: true })
   await rm(resolve(target, 'nanos.json'), { force: true })
+  await rm(resolve(target, 'release.json'), { force: true })
   /** @type {import('../../packages/contracts/src').NanoRegistry} */
   const registry = { schemaVersion: 1, nanos: {} }
   /** @type {import('../../config/types').SourceLock} */
   let lock = {}
   if (Object.values(config.nanos).some((nano) => nano.source?.kind === 'git')) {
-    lock = sourceSchemas.sourceLockSchema.parse(
-      JSON.parse(
-        await readFile(
-          resolve(projectRoot, '.nano-work/sources-lock.json'),
-          'utf8',
-        ),
-      ),
-    )
+    const filename = resolve(projectRoot, '.nano-work/sources-lock.json')
+    const content = await readFile(filename, 'utf8').catch((error) => {
+      if (error.code === 'ENOENT')
+        throw new Error(
+          'Nano sources are not prepared: run npm run build:integrated, or npm run build:prod for the root only',
+        )
+      throw error
+    })
+    lock = sourceSchemas.sourceLockSchema.parse(JSON.parse(content))
   }
   for (const [id, nano] of Object.entries(config.nanos)) {
     if (!nano.source) {
@@ -157,6 +159,11 @@ if (
 ) {
   try {
     const config = await readSources()
+    if (
+      process.argv.includes('--root-only') &&
+      process.argv.includes('--require-all')
+    )
+      throw new Error('--root-only and --require-all cannot be used together')
     if (process.argv.includes('--require-all')) requireAll(config)
     if (process.argv.includes('--root-only')) {
       for (const nano of Object.values(config.nanos)) nano.source = null

@@ -34,7 +34,7 @@ pipeline {
         stage('build') {
             when { expression { !params.FULL_RELEASE } }
             steps {
-                sh 'npm run build:prod -- --root-only'
+                sh 'npm run build:prod'
                 script { currentBuild.description = 'Root only; the four nanos are not included' }
             }
         }

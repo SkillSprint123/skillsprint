@@ -2,7 +2,6 @@ import globals from 'globals'
 import pluginJs from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import pluginReact from 'eslint-plugin-react'
-import stylistic from '@stylistic/eslint-plugin'
 import prettier from 'eslint-config-prettier/flat'
 
 export default [
@@ -10,11 +9,6 @@ export default [
     settings: {
       react: {
         version: 'detect',
-      },
-      'import/resolver': {
-        node: {
-          extensions: ['.js', '.jsx', '.ts', '.tsx'],
-        },
       },
     },
   },
@@ -47,14 +41,11 @@ export default [
     rules: { '@typescript-eslint/no-require-imports': 'off' },
   },
   {
-    plugins: {
-      '@stylistic': stylistic,
-    },
     rules: {
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
-        'warn', // or "error"
+        'error',
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
@@ -71,8 +62,6 @@ export default [
           allowSeparatedGroups: true,
         },
       ],
-      semi: ['error', 'never'],
-      '@stylistic/indent': ['error', 2],
     },
   },
   prettier,

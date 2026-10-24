@@ -120,6 +120,10 @@ test('assembly preserves the root, copies chunks, and produces a valid registry'
       () => readFile(resolve(output, 'nanos.json')),
       /ENOENT/,
     )
+    await assert.rejects(
+      () => readFile(resolve(output, 'release.json')),
+      /ENOENT/,
+    )
     await rm(resolve(source, '.env.production'))
     await symlink(resolve(source, 'index.js'), resolve(source, 'linked.js'))
     await assert.rejects(() => checkArtifact(source), /Symbolic link/)
@@ -178,6 +182,21 @@ test('root-only mode does not require checkouts of configured Git sources', asyn
       JSON.parse(await readFile(resolve(output, 'nanos.json'), 'utf8')),
       { schemaVersion: 1, nanos: {} },
     )
+    const conflicting = spawnSync(
+      process.execPath,
+      [
+        'scripts/release/assemble.mjs',
+        '--root-only',
+        '--require-all',
+        '--config',
+        configFile,
+        '--out',
+        relative(projectRoot, output),
+      ],
+      { cwd: projectRoot, encoding: 'utf8' },
+    )
+    assert.equal(conflicting.status, 1)
+    assert.match(conflicting.stderr, /cannot be used together/)
   } finally {
     await rm(workspace, { recursive: true, force: true })
     await rm(output, { recursive: true, force: true })

@@ -1,1 +1,1 @@
-npm run check && npm run build:prod -- --root-only
+npm run check && npm run build:prod
