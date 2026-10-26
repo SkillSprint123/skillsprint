@@ -46,6 +46,37 @@ test('release configuration requires four entries, a pinned ref, and safe paths'
   assert.throws(() => within('/tmp/a', '../b'))
 })
 
+test('Git sources and source locks accept SSH and HTTPS without embedded credentials', () => {
+  const commit = 'a'.repeat(40)
+  for (const url of [
+    'git@github.com:SkillSprint123/skillsprint-Interview.git',
+    'https://github.com/SkillSprint123/skillsprint-Interview.git',
+    'http://github.com/SkillSprint123/skillsprint-Interview.git',
+    'https://user:token@github.com/team/interview.git',
+    'https://github.com/team/interview.git?token=secret',
+    'file:///tmp/interview.git',
+    '--upload-pack=bad',
+  ]) {
+    const config = createSources()
+    config.nanos.interview.source = { kind: 'git', url, ref: commit }
+    const expected =
+      url.startsWith('git@') ||
+      url === 'https://github.com/SkillSprint123/skillsprint-Interview.git'
+    assert.equal(
+      schemas.nanoSourcesSchema.safeParse(config).success,
+      expected,
+      url,
+    )
+    assert.equal(
+      schemas.sourceLockSchema.safeParse({
+        interview: { version: '0.1.0', url, ref: commit, commit },
+      }).success,
+      expected,
+      url,
+    )
+  }
+})
+
 test('full releases report only missing Git sources and accept fully configured sources', () => {
   const config = createSources()
   config.nanos.interview.source = {

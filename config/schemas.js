@@ -18,8 +18,8 @@ const gitSourceSchema = z
     url: z
       .string()
       .regex(
-        /^git@[a-zA-Z0-9.-]+:[a-zA-Z0-9_./-]+\.git$/,
-        'An SSH Git repository URL is required',
+        /^(?:git@[a-zA-Z0-9.-]+:|https:\/\/[a-zA-Z0-9.-]+\/)[a-zA-Z0-9_./-]+\.git$/,
+        'An SSH or HTTPS Git repository URL without embedded credentials is required',
       ),
     ref: z
       .string()
