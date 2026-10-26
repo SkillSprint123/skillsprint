@@ -9,6 +9,8 @@ export const appConfig = parseAppConfig({
   registryUrl: getConfigValue(`${pkg.name}.nanos`) || undefined,
   version: pkg.version,
   features: {
-    aiInterview: getFeatures(pkg.name)?.['ai-interview']?.value,
+    aiInterview:
+      getConfigValue(`${pkg.name}.ai-interview`) ||
+      getFeatures(pkg.name)?.['ai-interview']?.value,
   },
 })
