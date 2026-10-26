@@ -35,7 +35,18 @@ test('source preparation pins commits, checks before building, and does not reco
     assert.deepEqual(Object.keys(lock), ['trainer'])
     assert.equal(lock.trainer.commit, commit)
     assert.deepEqual(calls.slice(-3), [
-      ['npm', 'ci'],
+      [
+        'npm',
+        'ci',
+        '--cache',
+        resolve(base, '.nano-work/npm-cache'),
+        '--progress=false',
+        '--fetch-retries=3',
+        '--foreground-scripts',
+        '--loglevel=verbose',
+        '--no-audit',
+        '--no-fund',
+      ],
       ['npm', 'run', 'check'],
       ['npm', 'run', 'build:prod'],
     ])

@@ -51,7 +51,21 @@ export const prepareSources = async (
       throw new Error(
         `Version of ${id} does not match the release configuration`,
       )
-    execute('npm', ['ci'], directory)
+    execute(
+      'npm',
+      [
+        'ci',
+        '--cache',
+        resolve(workspace, 'npm-cache'),
+        '--progress=false',
+        '--fetch-retries=3',
+        '--foreground-scripts',
+        '--loglevel=verbose',
+        '--no-audit',
+        '--no-fund',
+      ],
+      directory,
+    )
     execute('npm', ['run', nano.scripts.check], directory)
     execute('npm', ['run', nano.scripts.build], directory)
     lock[id] = {
