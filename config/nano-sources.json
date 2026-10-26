@@ -28,13 +28,13 @@
       "source": {
         "kind": "git",
         "url": "git@github.com:SkillSprint123/skillsprint-Interview.git",
-        "ref": "refs/tags/v0.1.0"
+        "ref": "9f8a89a7b5d51b21cad80a8a41a7264e0c7db49f"
       },
       "scripts": {
         "check": "check",
-        "build": "build:prod"
+        "build": "build:nano"
       },
-      "output": "dist",
+      "output": "dist-nano",
       "entry": "index.js",
       "styles": []
     },

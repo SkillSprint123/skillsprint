@@ -16,7 +16,7 @@
     "start": "node scripts/brojs.mjs server --port=8099 --with-open-browser",
     "build": "npm run clean && node scripts/brojs.mjs build --dev",
     "build:bundle": "npm run contracts:build && npm run clean && node scripts/brojs.mjs build",
-    "build:prod": "npm run build:bundle && node scripts/release/assemble.mjs --root-only",
+    "build:prod": "npm run build:integrated",
     "build:integrated": "npm run nanos:prepare && npm run build:bundle && node scripts/release/assemble.mjs",
     "contracts:build": "tsc -p packages/contracts/tsconfig.build.json",
     "contracts:pack": "npm run contracts:build && node scripts/pack-contracts.mjs",
