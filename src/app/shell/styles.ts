@@ -1,4 +1,4 @@
-import interFont from '../../shared/styles/assets/InterVariable.woff2'
+import { registerFonts } from '../../shared/styles/styles'
 import { tokens } from '../../shared/styles/tokens'
 import type { CssFunction } from '../../shared/styles/types'
 import { reducedMotion } from '../../shared/motion/styles'
@@ -6,15 +6,7 @@ import { reducedMotion } from '../../shared/motion/styles'
 const compactDesktop = '@media (min-width: 701px) and (max-height: 900px)'
 
 export const createShellStyles = (css: CssFunction) => {
-  css({
-    '@font-face': {
-      fontFamily: 'SkillSprint Inter',
-      src: `url("${interFont}") format("woff2")`,
-      fontStyle: 'normal',
-      fontWeight: '100 900',
-      fontDisplay: 'swap',
-    },
-  })
+  registerFonts(css)
 
   return {
     shell: css({
