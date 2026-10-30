@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 
 import { useCss } from '../../shared/styles/useCss'
@@ -8,10 +8,18 @@ import { joinRoute } from '../router/paths'
 import { sections } from '../router/sections'
 import { createShellStyles } from './styles'
 import { sectionIcons, shellAssets } from './assets'
+import { useAuth } from '../auth/useAuth'
+import { initials } from '../auth/storage'
+import { usePageTransition } from '../../shared/motion/usePageTransition'
 
 export const AppShell = () => {
   const styles = createShellStyles(useCss())
-  const { pathname } = useLocation()
+  const { pathname, hash } = useLocation()
+  const pageTransition = usePageTransition(pathname)
+  useEffect(() => {
+    if (!hash) window.scrollTo(0, 0)
+  }, [pathname, hash])
+  const { account, storageError } = useAuth()
   const currentSection = sections.find(({ path }) => {
     const route = joinRoute(appConfig.basePath, path)
     return pathname === route || pathname.startsWith(`${route}/`)
@@ -20,8 +28,10 @@ export const AppShell = () => {
     pathname === appConfig.basePath ||
     pathname === `${appConfig.basePath.replace(/\/$/, '')}/`
   const caption = isOverview
-    ? 'Твой рабочий стол'
-    : currentSection?.caption || currentSection?.title || 'SkillSprint'
+    ? 'Обзор'
+    : pathname === joinRoute(appConfig.basePath, 'account')
+      ? 'Мой аккаунт'
+      : currentSection?.caption || currentSection?.title || 'SkillSprint'
   const today = new Date()
   const date = new Intl.DateTimeFormat('ru-RU', {
     weekday: 'long',
@@ -42,8 +52,11 @@ export const AppShell = () => {
           <span className={styles.brandMark}>
             <img src={shellAssets.brand} alt="" />
           </span>
-          SkillSprint.
+          <span>
+            SkillSprint<span className={styles.brandDot}>.</span>
+          </span>
         </Link>
+        <p className={styles.navLabel}>ТВОЁ ПРОСТРАНСТВО</p>
         <nav aria-label="Разделы SkillSprint" className={styles.navigation}>
           <NavLink to={appConfig.basePath} end className={styles.link}>
             <span className={styles.iconSlot} aria-hidden="true">
@@ -72,27 +85,44 @@ export const AppShell = () => {
               <img src={shellAssets.reminder} alt="" />
             </span>
             <p>
-              Большая цель.
-              <br />
-              Маленькие шаги каждый день.
+              По одному шагу
+              <br />к большой цели.
             </p>
+            <span className={styles.reminderCaption}>
+              Всё получится. Просто начни.
+            </span>
           </div>
-          <div className={styles.profile}>
-            <span className={styles.avatar} aria-hidden="true">
-              Г
+          <NavLink
+            to={joinRoute(appConfig.basePath, 'account')}
+            className={styles.profile}
+            aria-label="Открыть аккаунт"
+          >
+            <span
+              className={styles.avatar}
+              data-avatar={account.profile.avatar}
+              aria-hidden="true"
+            >
+              {initials(account.profile.displayName)}
             </span>
             <div>
-              <p className={styles.profileName}>Гость</p>
-              <p className={styles.profileDescription}>
-                Твоя подготовка к цели
+              <p className={styles.profileName}>
+                {account.profile.displayName}
               </p>
+              <p className={styles.profileDescription}>Мой аккаунт</p>
             </div>
-          </div>
+            <span className={styles.profileArrow} aria-hidden="true">
+              ›
+            </span>
+          </NavLink>
         </div>
       </aside>
       <div className={styles.workspace}>
         <header className={styles.topBar}>
-          <p>{caption}</p>
+          <p className={styles.breadcrumb}>
+            <span>Моё пространство</span>
+            <span aria-hidden="true">/</span>
+            {caption}
+          </p>
           <div className={styles.topBarMeta}>
             <time
               dateTime={`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`}
@@ -108,13 +138,25 @@ export const AppShell = () => {
             </span>
           </div>
         </header>
-        <main id="skillsprint-content" className={styles.content} tabIndex={-1}>
+        <main
+          ref={pageTransition}
+          id="skillsprint-content"
+          className={styles.content}
+          tabIndex={-1}
+        >
+          {storageError &&
+            pathname !== joinRoute(appConfig.basePath, 'account') && (
+              <p className={styles.storageNotice} role="status">
+                Не удалось сохранить данные в браузере. Вход действует только в
+                текущей вкладке.
+              </p>
+            )}
           <AppRoutes />
         </main>
         <footer className={styles.footer}>
           <p>В своём темпе. К своей цели.</p>
           <div className={styles.footerMeta}>
-            <Link to={joinRoute(appConfig.basePath, 'pro')}>Тариф Pro</Link>
+            <Link to={joinRoute(appConfig.basePath, 'pro')}>Тарифы</Link>
             <span>Версия {appConfig.version}</span>
           </div>
         </footer>

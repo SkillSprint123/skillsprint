@@ -35,8 +35,8 @@ export const sections: AppSections = appSectionsSchema.parse([
   },
   {
     path: 'pro',
-    title: 'Тариф Pro',
-    description:
-      'Сценарий бесплатного тарифа с лимитом AI-сессий и перехода на Pro.',
+    title: 'Тарифы SkillSprint',
+    caption: 'Тарифы',
+    description: 'Бесплатный, Pro и Ultimate — выбери свой темп подготовки.',
   },
 ])

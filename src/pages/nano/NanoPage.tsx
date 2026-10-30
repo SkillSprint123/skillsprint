@@ -10,6 +10,7 @@ import { appConfig } from '../../app/config/config'
 import { useCss } from '../../shared/styles/useCss'
 import { createNanoStyles } from './styles'
 import type { NanoPageProps } from './types'
+import { useAuth } from '../../app/auth/useAuth'
 
 export const NanoPage = ({
   nanoId,
@@ -18,6 +19,9 @@ export const NanoPage = ({
   description,
 }: NanoPageProps) => {
   const styles = createNanoStyles(useCss())
+  const {
+    account: { profile },
+  } = useAuth()
   const target = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const navigateRef = useRef(navigate)
@@ -39,7 +43,7 @@ export const NanoPage = ({
         context: {
           basePath,
           apiBaseUrl: appConfig.apiBaseUrl,
-          user: null,
+          user: { id: profile.id, displayName: profile.displayName },
           navigate: (path) => navigateRef.current(path),
         },
         onState: setState,
@@ -60,12 +64,16 @@ export const NanoPage = ({
     return () => {
       void session.dispose()
     }
-  }, [nanoId, basePath, attempt])
+  }, [nanoId, basePath, attempt, profile.id, profile.displayName])
 
   return (
     <section>
-      <h1>{title}</h1>
-      <p className={styles.muted}>{description}</p>
+      {!(nanoId === 'interview' && state.status === 'mounted') && (
+        <>
+          <h1>{title}</h1>
+          <p className={styles.muted}>{description}</p>
+        </>
+      )}
       {state.status !== 'mounted' && (
         <div
           className={styles.panel}

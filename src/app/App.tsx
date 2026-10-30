@@ -2,13 +2,16 @@ import React from 'react'
 import { BrowserRouter } from 'react-router-dom'
 
 import { StyleScope } from '../shared/styles/StyleScope'
-import { AppShell } from './shell/AppShell'
+import { AuthProvider } from './auth/AuthProvider'
+import { AuthRoutes } from './auth/AuthRoutes'
 
 export default function App() {
   return (
     <StyleScope>
       <BrowserRouter>
-        <AppShell />
+        <AuthProvider>
+          <AuthRoutes />
+        </AuthProvider>
       </BrowserRouter>
     </StyleScope>
   )
